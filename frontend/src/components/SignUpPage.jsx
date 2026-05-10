@@ -41,7 +41,8 @@ export default function SignUpPage() {
 
       reset();
     } catch (error) {
-      setSignupMessage(error || "Registration failed. Please try again.");
+      const errorMessage = typeof error === 'string' ? error : (error?.message || "Registration failed. Please try again.");
+      setSignupMessage(errorMessage);
       setSignupMessageColor("red");
     }
   };

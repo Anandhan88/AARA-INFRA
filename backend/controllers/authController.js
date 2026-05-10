@@ -24,8 +24,12 @@ const unifiedLogin = async (req, res) => {
       return res.status(400).json({ success: false, message: "Email and password are required" });
     }
 
-    // Admin Login Rule (Hardcoded)
-    if (email === "aadhithyaa120@gmail.com" && password === "1234567890") {
+    // Admin Login Rule (Configured via Environment Variables)
+    const adminEmail = process.env.ADMIN_EMAIL || "aadhithyaa120@gmail.com";
+    const adminPassword = process.env.ADMIN_PASSWORD || "1234567890";
+    const adminName = process.env.ADMIN_NAME || "Admin";
+
+    if (email === adminEmail && password === adminPassword) {
       const token = jwt.sign({ id: "admin_hardcoded", role: "admin" }, JWT_SECRET, {
         expiresIn: TOKEN_EXPIRY
       });
@@ -34,7 +38,7 @@ const unifiedLogin = async (req, res) => {
         token,
         user: {
           id: "admin_hardcoded",
-          name: "Admin",
+          name: adminName,
           email: email,
           role: "admin"
         }
