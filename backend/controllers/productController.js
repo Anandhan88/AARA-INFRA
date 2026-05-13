@@ -132,14 +132,19 @@ const updateProduct = async (req, res) => {
         let product = await Product.findById(req.params.id);
 
         if (!product) return res.status(404).json({ msg: 'Product not found' });
-        if (product.createdBy.toString() !== req.user.id) {
-            return res.status(401).json({ msg: 'Not authorized' });
+        
+        // Allow update if user is admin or the creator
+        const isAdmin = req.user && req.user.role === 'admin';
+        const isCreator = product.createdBy && product.createdBy.toString() === req.user.id;
+
+        if (!isAdmin && !isCreator) {
+            return res.status(401).json({ msg: 'Not authorized to update this product' });
         }
 
         let image = product.image;
         if (req.file) {
-            // Delete old image if exists
-            if (product.image) {
+            // Delete old image if exists and it's a local file
+            if (product.image && !/^https?:\/\//i.test(product.image)) {
                 const oldPath = path.join(__dirname, '..', product.image);
                 if (fs.existsSync(oldPath)) {
                     fs.unlinkSync(oldPath);
@@ -156,8 +161,8 @@ const updateProduct = async (req, res) => {
 
         res.json(product);
     } catch (err) {
-        console.error(err.message);
-        res.status(500).send('Server Error');
+        console.error("Update Product Error:", err.message);
+        res.status(500).json({ msg: 'Server Error', error: err.message });
     }
 };
 
@@ -169,11 +174,16 @@ const deleteProduct = async (req, res) => {
         const product = await Product.findById(req.params.id);
 
         if (!product) return res.status(404).json({ msg: 'Product not found' });
-        if (product.createdBy.toString() !== req.user.id) {
-            return res.status(401).json({ msg: 'Not authorized' });
+        
+        // Allow delete if user is admin or the creator
+        const isAdmin = req.user && req.user.role === 'admin';
+        const isCreator = product.createdBy && product.createdBy.toString() === req.user.id;
+
+        if (!isAdmin && !isCreator) {
+            return res.status(401).json({ msg: 'Not authorized to delete this product' });
         }
 
-        if (product.image) {
+        if (product.image && !/^https?:\/\//i.test(product.image)) {
             const imagePath = path.join(__dirname, '..', product.image);
             if (fs.existsSync(imagePath)) {
                 fs.unlinkSync(imagePath);
@@ -183,8 +193,8 @@ const deleteProduct = async (req, res) => {
         await Product.findByIdAndDelete(req.params.id);
         res.json({ msg: 'Product removed' });
     } catch (err) {
-        console.error(err.message);
-        res.status(500).send('Server Error');
+        console.error("Delete Product Error:", err.message);
+        res.status(500).json({ msg: 'Server Error', error: err.message });
     }
 };
 

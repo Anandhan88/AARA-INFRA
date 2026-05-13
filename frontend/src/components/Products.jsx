@@ -90,7 +90,9 @@ export default function Products() {
         setEditingId(null);
         fetchProducts();
       } else {
-        console.error("Failed to save product");
+        const errorData = await res.json();
+        console.error("Failed to save product:", errorData);
+        alert(`Failed to save product: ${errorData.msg || errorData.message || 'Unknown error'}`);
       }
     } catch (err) {
       console.error("Error saving product:", err);
