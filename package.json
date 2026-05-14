@@ -1,0 +1,14 @@
+{
+  "name": "aarainfra-root",
+  "version": "1.0.0",
+  "description": "Root orchestrator for AaraInfra project",
+  "scripts": {
+    "frontend": "npm run dev --prefix frontend",
+    "backend": "npm start --prefix backend",
+    "dev": "concurrently \"npm run backend\" \"npm run frontend\"",
+    "install-all": "npm install && npm install --prefix frontend && npm install --prefix backend"
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.2"
+  }
+}
