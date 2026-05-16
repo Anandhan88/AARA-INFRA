@@ -14,7 +14,7 @@ const verifyToken = (req, res, next) => {
     req.user = decoded;
     next();
   } catch (err) {
-    console.error("JWT verification failed:", err.message);
+    console.error(`JWT verification failed for token: ${token.substring(0, 10)}... Error: ${err.message}`);
     return res.status(401).json({
       message: "Token verification failed",
       error: err.message

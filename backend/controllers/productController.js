@@ -67,8 +67,8 @@ const getProducts = async (req, res) => {
         const products = await Product.find({}).lean();
         res.json(products.map(withResolvedImage));
     } catch (err) {
-        console.error(err.message);
-        res.status(500).send('Server Error');
+        console.error("Get Products Error:", err);
+        res.status(500).json({ success: false, message: "Failed to fetch products", error: err.message });
     }
 };
 
@@ -85,8 +85,8 @@ const getProductById = async (req, res) => {
 
         return res.json(withResolvedImage(product));
     } catch (err) {
-        console.error(err.message);
-        return res.status(500).send('Server Error');
+        console.error("Get Product By ID Error:", err);
+        return res.status(500).json({ success: false, message: "Failed to fetch product", error: err.message });
     }
 };
 
@@ -118,8 +118,8 @@ const createProduct = async (req, res) => {
         const product = await newProduct.save();
         res.json(product);
     } catch (err) {
-        console.error(err.message);
-        res.status(500).send('Server Error');
+        console.error("Create Product Error:", err);
+        res.status(500).json({ success: false, message: "Failed to create product", error: err.message });
     }
 };
 
@@ -161,8 +161,12 @@ const updateProduct = async (req, res) => {
 
         res.json(product);
     } catch (err) {
-        console.error("Update Product Error:", err.message);
-        res.status(500).json({ msg: 'Server Error', error: err.message });
+        console.error("Update Product Error:", err);
+        res.status(500).json({ 
+            success: false, 
+            message: "Failed to update product", 
+            error: err.message 
+        });
     }
 };
 
@@ -193,8 +197,12 @@ const deleteProduct = async (req, res) => {
         await Product.findByIdAndDelete(req.params.id);
         res.json({ msg: 'Product removed' });
     } catch (err) {
-        console.error("Delete Product Error:", err.message);
-        res.status(500).json({ msg: 'Server Error', error: err.message });
+        console.error("Delete Product Error:", err);
+        res.status(500).json({ 
+            success: false, 
+            message: "Failed to delete product", 
+            error: err.message 
+        });
     }
 };
 

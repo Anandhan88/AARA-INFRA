@@ -92,10 +92,11 @@ export default function Products() {
       } else {
         const errorData = await res.json();
         console.error("Failed to save product:", errorData);
-        alert(`Failed to save product: ${errorData.msg || errorData.message || 'Unknown error'}`);
+        alert(`Failed to save product: ${errorData.message || errorData.msg || 'Unknown error'}`);
       }
     } catch (err) {
       console.error("Error saving product:", err);
+      alert(`Error saving product: ${err.message}`);
     }
   };
 
@@ -125,13 +126,20 @@ export default function Products() {
     if (!window.confirm("Are you sure you want to delete this product?")) return;
     const token = localStorage.getItem("token");
     try {
-      await fetch(`${API_BASE_URL}/api/products/${id}`, {
+      const res = await fetch(`${API_BASE_URL}/api/products/${id}`, {
         method: "DELETE",
         headers: { Authorization: `Bearer ${token}` }
       });
-      fetchProducts();
+      if (res.ok) {
+        fetchProducts();
+      } else {
+        const errorData = await res.json();
+        console.error("Error deleting product:", errorData);
+        alert(`Error deleting product: ${errorData.message || errorData.msg || 'Access Denied'}`);
+      }
     } catch (err) {
       console.error("Error deleting product:", err);
+      alert(`Error deleting product: ${err.message}`);
     }
   };
 

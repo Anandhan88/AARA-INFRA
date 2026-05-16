@@ -30,13 +30,22 @@ export default function SignUpPage() {
         password: data.password,
       };
 
-      await registerUser(signupData);
+      const response = await registerUser(signupData);
+
+      // Store token and user data to ensure the user is logged in
+      localStorage.setItem("token", response.token);
+      localStorage.setItem("user", JSON.stringify(response.user));
+      localStorage.setItem("tokenExpiry", Date.now() + 60 * 60 * 1000);
 
       setSignupMessage("Registration successful! Redirecting...");
       setSignupMessageColor("green");
 
       setTimeout(() => {
-        navigate("/");
+        if (response.user.role === "admin") {
+          navigate("/dashboard");
+        } else {
+          navigate("/client/dashboard");
+        }
       }, 2000);
 
       reset();
