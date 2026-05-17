@@ -1,6 +1,6 @@
 import axios from "axios";
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:5001";
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "";
 const API_URL = `${API_BASE_URL}/api/auth`;
 
 // Register API call
@@ -19,6 +19,9 @@ export const loginUser = async (userData) => {
     const response = await axios.post(`${API_URL}/login`, userData);
     return response.data;
   } catch (error) {
+    if (!error.response) {
+      throw "Network Error: Cannot connect to the server. Please check if the backend is running.";
+    }
     throw error.response?.data?.message || "An error occurred during login";
   }
 };
