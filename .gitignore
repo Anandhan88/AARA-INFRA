@@ -51,5 +51,4 @@ logs/
 .node_repl_history
 
 # Package manager lock files (optional)
-package-lock.json
 yarn.lock
