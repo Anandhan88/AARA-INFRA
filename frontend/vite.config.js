@@ -13,7 +13,23 @@ export default defineConfig({
       '@': path.resolve(__dirname, './src'),
     },
   },
+  optimizeDeps: {
+    include: [
+      'react',
+      'react-dom',
+      'react-router-dom',
+      'axios',
+      'lucide-react',
+      'framer-motion',
+      'recharts',
+      'react-hot-toast',
+      'clsx'
+    ],
+  },
   server: {
+    warmup: {
+      clientFiles: ['./src/main.jsx', './src/App.jsx'],
+    },
     proxy: {
       '/api': {
         target: 'http://localhost:5001',

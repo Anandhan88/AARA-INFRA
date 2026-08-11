@@ -1,17 +1,23 @@
 import { useForm } from "react-hook-form";
 import { useState } from "react";
 import { loginUser } from "../utility/api";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import ForgotPassword from "../components/ForgotPassword";
-import { ArrowRight, Lock, Mail, CreditCard } from "lucide-react";
+import { ArrowRight, Lock, Mail, CreditCard, User, ShieldCheck } from "lucide-react";
 // eslint-disable-next-line no-unused-vars
 import { motion } from "framer-motion";
+
 export default function LoginPage() {
+  const [searchParams] = useSearchParams();
+  const initialRole = searchParams.get("role") === "admin" ? "admin" : "client";
+  const [activeRole, setActiveRole] = useState(initialRole);
+
   const {
     register,
     handleSubmit,
     formState: { errors, isSubmitting }
   } = useForm();
+
   const [loginMessage, setLoginMessage] = useState("");
   const [loginMessageColor, setLoginMessageColor] = useState("green");
   const [showForgotPassword, setShowForgotPassword] = useState(false);
@@ -23,6 +29,7 @@ export default function LoginPage() {
       const loginData = {
         email: data.email,
         password: data.password,
+        role: activeRole,
       };
 
       const response = await loginUser(loginData);
@@ -31,11 +38,11 @@ export default function LoginPage() {
       localStorage.setItem("user", JSON.stringify(response.user));
       localStorage.setItem("tokenExpiry", Date.now() + 60 * 60 * 1000);
 
-      setLoginMessage("Login successful!");
+      setLoginMessage(`Login successful! Redirecting as ${response.user.role === 'admin' ? 'Admin' : 'Client'}...`);
       setLoginMessageColor("green");
 
       await new Promise(resolve => setTimeout(resolve, 800));
-      
+
       if (response.user.role === "admin") {
         navigate("/dashboard");
       } else {
@@ -48,11 +55,11 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900 transition-colors duration-500">
-      <div className="flex w-full max-w-5xl h-[650px] bg-white dark:bg-gray-800 rounded-3xl shadow-2xl overflow-hidden mx-4 border border-gray-200 dark:border-gray-700">
+    <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900 transition-colors duration-500 py-6">
+      <div className="flex w-full max-w-5xl min-h-[660px] bg-white dark:bg-gray-800 rounded-3xl shadow-2xl overflow-hidden mx-4 border border-gray-200 dark:border-gray-700">
 
         {/* Left Panel - Hero Section */}
-        <div className="hidden lg:flex w-1/2 relative bg-gradient-to-br from-primary-600 to-indigo-700 items-center justify-center p-12 overflow-hidden">
+        <div className="hidden lg:flex w-1/2 relative bg-gradient-to-br from-primary-600 via-indigo-600 to-indigo-800 items-center justify-center p-12 overflow-hidden">
           <div className="absolute inset-0 opacity-20 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] animate-pulse-slow"></div>
           <div className="absolute -top-24 -left-24 w-64 h-64 bg-white/10 rounded-full blur-3xl"></div>
           <div className="absolute -bottom-24 -right-24 w-64 h-64 bg-accent-500/20 rounded-full blur-3xl"></div>
@@ -72,13 +79,44 @@ export default function LoginPage() {
 
         {/* Right Panel - Login Form */}
         <div className="w-full lg:w-1/2 p-8 sm:p-12 flex flex-col justify-center bg-white dark:bg-gray-800 relative">
-          <div className="max-w-md mx-auto w-full space-y-8">
-            <div className="text-center lg:text-left">
-              <h2 className="text-3xl font-display font-bold text-gray-900 dark:text-white">Welcome Back</h2>
-              <p className="mt-2 text-gray-500 dark:text-gray-400">Please enter your credentials to sign in.</p>
+          <div className="max-w-md mx-auto w-full space-y-6">
+            
+            {/* Role Switcher Tabs */}
+            <div className="bg-gray-100 dark:bg-gray-700/50 p-1.5 rounded-2xl flex items-center justify-between border border-gray-200 dark:border-gray-600">
+              <button
+                type="button"
+                onClick={() => { setActiveRole("client"); setLoginMessage(""); }}
+                className={`flex-1 py-2.5 px-4 rounded-xl font-medium text-sm transition-all duration-200 flex items-center justify-center gap-2 ${
+                  activeRole === "client"
+                    ? "bg-white dark:bg-gray-800 text-primary-600 dark:text-primary-400 shadow-md font-semibold"
+                    : "text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white"
+                }`}
+              >
+                <User className="w-4 h-4" /> Client Login
+              </button>
+              <button
+                type="button"
+                onClick={() => { setActiveRole("admin"); setLoginMessage(""); }}
+                className={`flex-1 py-2.5 px-4 rounded-xl font-medium text-sm transition-all duration-200 flex items-center justify-center gap-2 ${
+                  activeRole === "admin"
+                    ? "bg-white dark:bg-gray-800 text-primary-600 dark:text-primary-400 shadow-md font-semibold"
+                    : "text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white"
+                }`}
+              >
+                <ShieldCheck className="w-4 h-4" /> Admin Login
+              </button>
             </div>
 
-            <form onSubmit={handleSubmit(onLogin)} className="space-y-6">
+            <div className="text-center lg:text-left">
+              <h2 className="text-3xl font-display font-bold text-gray-900 dark:text-white">
+                {activeRole === "admin" ? "Admin Portal" : "Client Portal"}
+              </h2>
+              <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
+                Sign in to manage {activeRole === "admin" ? "projects, invoices & operations" : "your orders & invoices"}.
+              </p>
+            </div>
+
+            <form onSubmit={handleSubmit(onLogin)} className="space-y-5">
               <div className="space-y-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1 ml-1">Email Address</label>
@@ -95,7 +133,7 @@ export default function LoginPage() {
                         },
                       })}
                       className="w-full pl-10 pr-4 py-3 rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 outline-none transition-all placeholder:text-gray-400"
-                      placeholder="you@company.com"
+                      placeholder={activeRole === "admin" ? "admin@aarainfra.com" : "you@company.com"}
                     />
                   </div>
                   {errors.email && (
@@ -146,7 +184,7 @@ export default function LoginPage() {
                   <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
                 ) : (
                   <>
-                    Sign In <ArrowRight className="w-5 h-5" />
+                    Sign In as {activeRole === "admin" ? "Admin" : "Client"} <ArrowRight className="w-5 h-5" />
                   </>
                 )}
               </button>
@@ -162,14 +200,14 @@ export default function LoginPage() {
               )}
             </form>
 
-            <div className="pt-6 text-center border-t border-gray-100 dark:border-gray-700">
+            <div className="pt-5 text-center border-t border-gray-100 dark:border-gray-700">
               <p className="text-gray-500 dark:text-gray-400 text-sm">
                 Don't have an account?{" "}
                 <button
-                  onClick={() => navigate("/signup")}
+                  onClick={() => navigate(`/signup?role=${activeRole}`)}
                   className="text-primary-600 hover:text-primary-700 dark:text-primary-400 dark:hover:text-primary-300 font-semibold hover:underline transition-all"
                 >
-                  Create Account
+                  Create {activeRole === "admin" ? "Admin" : "Client"} Account
                 </button>
               </p>
             </div>

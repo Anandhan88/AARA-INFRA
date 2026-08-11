@@ -25,8 +25,8 @@ const unifiedLogin = async (req, res) => {
     }
 
     // Admin Login Rule (Configured via Environment Variables)
-    const adminEmail = process.env.ADMIN_EMAIL || "aadhithyaa120@gmail.com";
-    const adminPassword = process.env.ADMIN_PASSWORD || "1234567890";
+    const adminEmail = process.env.ADMIN_EMAIL || "anand.settu2006@gmail.com";
+    const adminPassword = process.env.ADMIN_PASSWORD || "Apranand*0539";
     const adminName = process.env.ADMIN_NAME || "Admin";
 
     if (email === adminEmail && password === adminPassword) {
@@ -158,7 +158,8 @@ exports.loginUser = unifiedLogin;
 
 // Register User
 exports.registerUser = async (req, res) => {
-  const { name, email, password, phone, address } = req.body;
+  const { name, email, password, phone, address, role } = req.body;
+  const userRole = role === "admin" ? "admin" : "client";
 
   try {
     // Check if user exists by email or phone
@@ -172,25 +173,30 @@ exports.registerUser = async (req, res) => {
       }
     }
 
-    // Create new client record in Clients Collection
-    const newClient = new Client({
-      name,
-      email,
-      phone,
-      address,
-      state: "",
-      stateCode: "",
-      gstin: ""
-    });
-    await newClient.save();
+    let clientRecord = null;
+    if (userRole === "client") {
+      // Create new client record in Clients Collection
+      const newClient = new Client({
+        name,
+        email,
+        phone,
+        address: address || "Address not provided",
+        state: "",
+        stateCode: "",
+        gstin: ""
+      });
+      await newClient.save();
+      clientRecord = newClient;
+    }
 
     // Create new user with plain text password (INSECURE - As per previous setup, but should be hashed if possible)
     const newUser = new User({
       name,
       email,
       phone,
-      password, // Stored in plain text based on pre-existing logic
-      clientId: newClient._id
+      password,
+      role: userRole,
+      clientId: clientRecord ? clientRecord._id : undefined
     });
 
     await newUser.save();
@@ -198,12 +204,14 @@ exports.registerUser = async (req, res) => {
     const token = generateAuthToken(newUser);
 
     // Emit Real-Time Socket Event to Admin Room
-    try {
+    if (clientRecord) {
+      try {
         const { getIO } = require("../socket");
         const io = getIO();
-        io.to("admin").emit("newClient", newClient);
-    } catch (socketError) {
+        io.to("admin").emit("newClient", clientRecord);
+      } catch (socketError) {
         console.error("Socket error on client registration:", socketError);
+      }
     }
 
     return res.status(201).json({
@@ -214,8 +222,8 @@ exports.registerUser = async (req, res) => {
         name: newUser.name,
         email: newUser.email,
         phone: newUser.phone,
-        role: newUser.role || 'client',
-        clientId: newClient._id
+        role: userRole,
+        clientId: clientRecord ? clientRecord._id : undefined
       }
     });
 

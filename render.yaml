@@ -1,0 +1,22 @@
+services:
+  - type: web
+    name: aarainfra-backend
+    env: node
+    rootDir: backend
+    buildCommand: npm install
+    startCommand: npm start
+    envVars:
+      - key: PORT
+        value: 10000
+      - key: MONGODB_URI
+        sync: false
+      - key: JWT_SECRET
+        generateValue: true
+      - key: CORS_ORIGIN
+        sync: false
+      - key: ADMIN_NAME
+        value: Anand
+      - key: ADMIN_EMAIL
+        value: anand.settu2006@gmail.com
+      - key: ADMIN_PASSWORD
+        value: Apranand*0539

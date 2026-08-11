@@ -12,7 +12,7 @@ let io;
 const initSocket = (server) => {
   io = new Server(server, {
     cors: {
-      origin: socketCorsOrigins,
+      origin: "*",
       methods: ["GET", "POST", "PUT", "DELETE"],
     },
   });

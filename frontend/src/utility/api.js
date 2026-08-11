@@ -9,6 +9,9 @@ export const registerUser = async (userData) => {
     const response = await axios.post(`${API_URL}/register`, userData);
     return response.data;
   } catch (error) {
+    if (!error.response) {
+      throw "Network Error: Cannot connect to the server. Please check if the backend is running and connected to database.";
+    }
     throw error.response?.data?.message || "An error occurred during registration";
   }
 };

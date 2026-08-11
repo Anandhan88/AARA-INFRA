@@ -15,7 +15,13 @@ const corsOrigins = (process.env.CORS_ORIGIN || "http://localhost:5173")
 
 // Middleware
 app.use(cors({
-  origin: corsOrigins,
+  origin: (origin, callback) => {
+    if (!origin || /^http:\/\/localhost:\d+$/.test(origin) || corsOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(null, true);
+    }
+  },
   credentials: true,
 }));
 app.use(express.json());
